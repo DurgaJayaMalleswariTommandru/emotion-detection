@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection</title>
+</head>
+<body>
+
+<h2>Real-Time Emotion Detection</h2>
+
+<video id="video" width="400" height="300" autoplay></video>
+<br><br>
+<button onclick="capture()">Detect Emotion</button>
+
+<h3 id="result"></h3>
+
+<script>
+    const video = document.getElementById("video");
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        });
+
+    function capture() {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        const imageData = canvas.toDataURL("image/jpeg");
+
+        fetch("/capture", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ image: imageData })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("result").innerText =
+                "Detected Emotion: " + data.emotion;
+        });
+    }
+</script>
+
+</body>
+</html>
